@@ -1,0 +1,78 @@
+services:
+  catalogue:
+    build: ./catalogue # it moves to catalogue directory
+    image: venu33/catalogue:1.0.0   # docker build -t venu33/catalogue:1.0.0
+    container_name: catalogue
+    depends_on:
+    - mongodb 
+  user:
+    build: ./user # it moves to user directory
+    image: venu33/user:1.0.0   # docker build -t venu33/user:1.0.0
+    container_name: user
+    depends_on:
+    - redis 
+    - mongodb
+  cart:
+    build: ./cart # it moves to user directory
+    image: venu33/cart:1.0.0   # docker build -t venu33/user:1.0.0
+    container_name: cart
+    depends_on:
+    - redis
+    - catalogue
+  shipping:
+    build: ./shipping # it moves to shipping directory
+    image: venu33/shipping:1.0.0   # docker build -t venu33/shipping:1.0.0
+    container_name: shipping
+    depends_on:
+    - mysql
+    - cart
+  payment:
+    build: ./payment # it moves to payment directory
+    image: venu33/payment:1.0.0   # docker build -t venu33/payment:1.0.0
+    container_name: payment
+    environment:
+      CART_HOST: "cart"
+      CART_PORT: "8080"
+      USER_HOST: "user"
+      USER_PORT: "8080"
+      AMQP_HOST: "rabbitmq"
+      AMQP_USER: "roboshop"
+      AMQP_PASS: "roboshop123"
+    depends_on:
+    - rabbitmq
+    - cart
+    - user          
+  frontend:
+    build: ./frontend # it moves to frontend directory
+    image: venu33/frontend:1.0.0   # docker build -t venu33/frontend:1.0.0
+    container_name: frontend
+    ports: 
+    - "80:80"
+    depends_on:
+    - catalogue
+    - user 
+    - cart 
+    - shipping
+    - payment    
+  mongodb:
+    build: ./mongodb # it moves to mongodb directory
+    image: venu33/mongodb:1.0.0   # docker build -t venu33/mongodb:1.0.0
+    container_name: mongodb
+  redis:
+    image: redis:7.0
+    container_name: redis 
+  mysql:
+    build: ./mysql
+    image: venu33/msql:1.0.0
+    container_name: mysql
+  rabbitmq:
+    image: rabbitmq:3
+    environment:
+      RABBITMQ_DEFAULT_USER: roboshop 
+      RABBITMQ_DEFAULT_PASS: roboshop123
+    container_name: rabbitmq  
+networks:
+  default:
+    driver: bridge
+    name: roboshop
+    external: false # if true, you need to create network manually
