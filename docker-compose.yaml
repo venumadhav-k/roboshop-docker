@@ -71,8 +71,9 @@ services:
       RABBITMQ_DEFAULT_USER: roboshop 
       RABBITMQ_DEFAULT_PASS: roboshop123
     container_name: rabbitmq  
+
 networks:
   default:
     driver: bridge
     name: roboshop
-    external: false # if true, you need to create network manually
+    external: true # if true, you need to create network manually
